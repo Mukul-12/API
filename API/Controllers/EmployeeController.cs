@@ -15,7 +15,7 @@ namespace API.Controllers
             return Ok(EmployeeData.EmployeeList);
         }
 
-        [HttpGet("{id:int}", Name = "GetEmp")]
+        [HttpGet("{id:int}", Name="GetEmp")]
         [ProducesResponseType(200, Type =typeof(EmployeeDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(404)]
@@ -34,8 +34,13 @@ namespace API.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         public ActionResult<EmployeeDTO> createEmployee([FromBody] EmployeeDTO employee)
         {
+            if(EmployeeData.EmployeeList.FirstOrDefault(u=>u.Name.ToLower() == employee.Name.ToLower()) != null) {
+                ModelState.AddModelError("Not Unique", "Name Already Exist");
+                return BadRequest(ModelState);
+            }
             if (employee == null)
             {
                 return BadRequest(employee);
