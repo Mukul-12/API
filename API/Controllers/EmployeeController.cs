@@ -15,7 +15,7 @@ namespace API.Controllers
             return Ok(EmployeeData.EmployeeList);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("{id:int}", Name = "GetEmp")]
         [ProducesResponseType(200, Type =typeof(EmployeeDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(404)]
@@ -32,6 +32,26 @@ namespace API.Controllers
             }
             return Ok(emp);
         }
+
+        [HttpPost]
+        public ActionResult<EmployeeDTO> createEmployee([FromBody] EmployeeDTO employee)
+        {
+            if (employee == null)
+            {
+                return BadRequest(employee);
+            }
+
+            if(employee.Id > 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            employee.Id = EmployeeData.EmployeeList.OrderByDescending(u=>u.Id).First().Id + 1;
+            EmployeeData.EmployeeList.Add(employee);
+            /*return Ok(employee);*/
+            return CreatedAtRoute("GetEmp", new { id = employee.Id }, employee);
+        }
+
 
     }
 }
