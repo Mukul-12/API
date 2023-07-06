@@ -6,8 +6,8 @@ namespace API.Data
     {
         public static List<EmployeeDTO> EmployeeList = new List<EmployeeDTO>()
         {
-            new EmployeeDTO(){Id = 1, Name = "Mukul"},
-            new EmployeeDTO(){Id = 2, Name = "Ram"}
+            new EmployeeDTO(){Id = 1, Name = "Mukul", salary= 10000},
+            new EmployeeDTO(){Id = 2, Name = "Ram", salary = 20000}
         };
     }
 }
