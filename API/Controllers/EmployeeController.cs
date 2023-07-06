@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.Models;
 using API.Models.DTO;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -91,5 +92,26 @@ namespace API.Controllers
             return NoContent();
         }
 
+
+        [HttpPatch("{id:int}", Name = "patchEmp")]
+        public ActionResult<EmployeeDTO> patchEmployee(int id, JsonPatchDocument<EmployeeDTO> employee)
+        {
+            if(employee == null || id == 0)
+            {
+                return BadRequest();
+            }
+
+            var emp = EmployeeData.EmployeeList.FirstOrDefault(u=>u.Id == id);
+            if(emp == null)
+            {
+                return BadRequest();
+            }
+            employee.ApplyTo(emp, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            return NoContent();
+        }
     }
 }
