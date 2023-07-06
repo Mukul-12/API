@@ -16,8 +16,8 @@ namespace API.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [ProducesResponseType(200)]
-        [ProducesResponseType(400)]
+        [ProducesResponseType(200, Type =typeof(EmployeeDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(404)]
         public ActionResult<EmployeeDTO> GetEmployee(int id)
         {
