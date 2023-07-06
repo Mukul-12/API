@@ -10,16 +10,24 @@ namespace API.Controllers
     public class EmployeeController : Controller
     {
         [HttpGet]
-        public IEnumerable<EmployeeDTO> getEmployees()
+        public ActionResult<IEnumerable<EmployeeDTO>> getEmployees()
         {
-            
-            return EmployeeData.EmployeeList;
+            return Ok(EmployeeData.EmployeeList);
         }
 
         [HttpGet("{id:int}")]
-        public EmployeeDTO GetEmployee(int id)
+        public ActionResult<EmployeeDTO> GetEmployee(int id)
         {
-            return EmployeeData.EmployeeList.FirstOrDefault(x => x.Id == id);
+            if(id == 0)
+            {
+                return BadRequest();
+            }
+            var emp = EmployeeData.EmployeeList.FirstOrDefault(x => x.Id == id);
+            if(emp == null)
+            {
+                return NotFound();
+            }
+            return Ok(emp);
         }
 
     }
