@@ -1,4 +1,5 @@
-﻿using API.Models;
+﻿using API.Data;
+using API.Models;
 using API.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,12 +12,14 @@ namespace API.Controllers
         [HttpGet]
         public IEnumerable<EmployeeDTO> getEmployees()
         {
-            var empList = new List<EmployeeDTO>()
-            {
-                new EmployeeDTO(){Id = 1, Name = "Mukul" },
-                new EmployeeDTO(){Id = 2, Name = "Ram"}
-            };
-            return empList;
+            
+            return EmployeeData.EmployeeList;
+        }
+
+        [HttpGet("{id:int}")]
+        public EmployeeDTO GetEmployee(int id)
+        {
+            return EmployeeData.EmployeeList.FirstOrDefault(x => x.Id == id);
         }
 
     }
