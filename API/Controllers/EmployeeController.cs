@@ -1,4 +1,5 @@
-﻿using API.Data;
+﻿using API.Custom_Logging;
+using API.Data;
 using API.Models;
 using API.Models.DTO;
 using Microsoft.AspNetCore.JsonPatch;
@@ -10,16 +11,24 @@ namespace API.Controllers
     [ApiController]
     public class EmployeeController : Controller
     {
-        private readonly ILogger<EmployeeController> _logger;
+        /*private readonly ILogger<EmployeeController> _logger;
         public EmployeeController(ILogger<EmployeeController> logger)
         {
             _logger = logger;
+        }*/
+
+        private readonly ICustomLogger _customLogger;
+
+        public EmployeeController(ICustomLogger customLogger)
+        {
+            _customLogger = customLogger;   
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<EmployeeDTO>> getEmployees()
         {
-            _logger.LogInformation("Getting all Employees");
+            /*_logger.LogInformation("Getting all Employees");*/
+            _customLogger.Log("Getting all employees", "");
             return Ok(EmployeeData.EmployeeList);
         }
 
@@ -32,7 +41,8 @@ namespace API.Controllers
         {
             if (id == 0)
             {
-                _logger.LogError("Error in Id");
+                /*_logger.LogError("Error in Id");*/
+                _customLogger.Log("Error in Id", "error");
                 return BadRequest();
             }
             var emp = EmployeeData.EmployeeList.FirstOrDefault(x => x.Id == id);
