@@ -10,9 +10,16 @@ namespace API.Controllers
     [ApiController]
     public class EmployeeController : Controller
     {
+        private readonly ILogger<EmployeeController> _logger;
+        public EmployeeController(ILogger<EmployeeController> logger)
+        {
+            _logger = logger;
+        }
+
         [HttpGet]
         public ActionResult<IEnumerable<EmployeeDTO>> getEmployees()
         {
+            _logger.LogInformation("Getting all Employees");
             return Ok(EmployeeData.EmployeeList);
         }
 
@@ -25,6 +32,7 @@ namespace API.Controllers
         {
             if (id == 0)
             {
+                _logger.LogError("Error in Id");
                 return BadRequest();
             }
             var emp = EmployeeData.EmployeeList.FirstOrDefault(x => x.Id == id);
