@@ -12,7 +12,7 @@
             }
             else
             {
-                Console.WriteLine("message");
+                Console.WriteLine(message);
             }
         }
     }
