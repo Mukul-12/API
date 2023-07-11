@@ -20,6 +20,7 @@ namespace API.Controllers
             _context = context;
             _mapper = mapper;
         }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StudentDTO>>> getStudents()
         {
@@ -62,6 +63,7 @@ namespace API.Controllers
             }
             Student model = _mapper.Map<Student>(student);
             model.createdDate = DateTime.Now;
+            model.updatedDate = DateTime.Now;
             await _context.Students.AddAsync(model);
             await _context.SaveChangesAsync();
 
@@ -96,7 +98,7 @@ namespace API.Controllers
                 return BadRequest();
             }
             Student model = _mapper.Map<Student>(student);
-            
+            model.updatedDate = DateTime.Now;
             _context.Students.Update(model);
             await _context.SaveChangesAsync();
             return NoContent();
@@ -121,7 +123,7 @@ namespace API.Controllers
             }
             student.ApplyTo(studentDTO, ModelState);
             Student model = _mapper.Map<Student>(studentDTO);
-           
+            model.updatedDate = DateTime.Now;
             _context.Students.Update(model);
             await _context.SaveChangesAsync();
             if (!ModelState.IsValid)
