@@ -1,8 +1,10 @@
 ﻿using API.Data;
 using API.Models;
 using API.Models.DTO;
+using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
@@ -12,16 +14,17 @@ namespace API.Controllers
     public class StudentController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public StudentController(ApplicationDbContext context)
+        private readonly IMapper _mapper;
+        public StudentController(ApplicationDbContext context, IMapper mapper)
         {
-
             _context = context;
-
+            _mapper = mapper;
         }
         [HttpGet]
-        public ActionResult<IEnumerable<StudentDTO>> getStudents()
+        public async Task<ActionResult<IEnumerable<StudentDTO>>> getStudents()
         {
-            return Ok(_context.Students.ToList());
+            IEnumerable<Student> studentList = await _context.Students.ToListAsync();
+            return Ok(_mapper.Map<List<StudentDTO>>(studentList));
         }
 
 
@@ -29,26 +32,26 @@ namespace API.Controllers
         [ProducesResponseType(200, Type = typeof(StudentDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(404)]
-        public ActionResult<StudentDTO> GetStudent(int id)
+        public async Task<ActionResult<StudentDTO>> GetStudent(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
-            var student = _context.Students.FirstOrDefault(x => x.Id == id);
+            var student =await _context.Students.FirstOrDefaultAsync(x => x.Id == id);
             if (student == null)
             {
                 return NotFound();
             }
-            return Ok(student);
+            return Ok(_mapper.Map<StudentDTO>(student));
         }
 
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public ActionResult<StudentDTO> createStudent([FromBody] StudentDTO student)
+        public async Task<ActionResult<StudentDTO>> createStudent([FromBody] createStudentDTO student)
         {
-            if (_context.Students.FirstOrDefault(u => u.Name.ToLower() == student.Name.ToLower()) != null)
+            if (await _context.Students.FirstOrDefaultAsync(u => u.Name.ToLower() == student.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("Not Unique", "Name Already Exist");
                 return BadRequest(ModelState);
@@ -57,96 +60,70 @@ namespace API.Controllers
             {
                 return BadRequest(student);
             }
+            Student model = _mapper.Map<Student>(student);
+            model.createdDate = DateTime.Now;
+            await _context.Students.AddAsync(model);
+            await _context.SaveChangesAsync();
 
-            if (student.Id > 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            Student model = new()
-            {
-                Id = student.Id,
-                Name = student.Name,
-                Email = student.Email,
-                Fees = student.Fees,
-            };
-
-            _context.Students.Add(model);
-            _context.SaveChanges();
-            /*return Ok(employee);*/
-            return CreatedAtRoute("GetStu", new { id = student.Id }, student);
+            return CreatedAtRoute("GetStu", new { id = model.Id }, model);
         }
 
 
         [HttpDelete("{id:int}", Name = "DelStu")]
-        public ActionResult<StudentDTO> deleteStudent(int id)
+        public async Task<IActionResult> deleteStudent(int id)
         {
             if (id == 0)
             {
                 return BadRequest();
             }
 
-            var stu = _context.Students.FirstOrDefault(u => u.Id == id);
+            var stu =  await _context.Students.FirstOrDefaultAsync(u => u.Id == id);
             if (stu == null)
             {
                 return NotFound();
             }
             _context.Students.Remove(stu);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
 
         [HttpPut("{id:int}", Name = "putStu")]
-        public ActionResult<StudentDTO> putStudent(int id, [FromBody] StudentDTO student)
+        public async Task<IActionResult> putStudent(int id, [FromBody] updateStudentDTO student)
         {
             if (student == null || id != student.Id)
             {
                 return BadRequest();
             }
-            Student model = new()
-            {
-                Id = student.Id,
-                Name = student.Name,
-                Email = student.Email,
-                Fees = student.Fees,
-            };
+            Student model = _mapper.Map<Student>(student);
+            
             _context.Students.Update(model);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
 
         [HttpPatch("{id:int}", Name = "patchStu")]
-        public ActionResult<StudentDTO> patchStudent(int id, JsonPatchDocument<StudentDTO> student)
+        public async Task<IActionResult> patchStudent(int id, JsonPatchDocument<updateStudentDTO> student)
         {
             if (student == null || id == 0)
             {
                 return BadRequest();
             }
 
-            var stu = _context.Students.AsNoTracking().FirstOrDefault(u => u.Id == id);
+            var stu = await _context.Students.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
 
-            StudentDTO studentDTO = new()
-            {
-                Id = stu.Id,
-                Name = stu.Name,
-                Email = stu.Email,
-                Fees = stu.Fees
-            };
+            updateStudentDTO studentDTO = _mapper.Map<updateStudentDTO>(stu);
+            
             if (stu == null)
             {
                 return BadRequest();
             }
             student.ApplyTo(studentDTO, ModelState);
-            Student model = new()
-            {
-                Id = studentDTO.Id,
-                Name = studentDTO.Name,
-                Email = studentDTO.Email,
-                Fees = studentDTO.Fees,
-            };
+            Student model = _mapper.Map<Student>(studentDTO);
+           
             _context.Students.Update(model);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

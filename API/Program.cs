@@ -1,5 +1,6 @@
 /*using Serilog;*/
 
+using API;
 using API.Custom_Logging;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("mycon"));
 });
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
