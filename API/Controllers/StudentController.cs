@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.Models;
 using API.Models.DTO;
+using API.Repository.IRepository;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -13,18 +14,19 @@ namespace API.Controllers
     [ApiController]
     public class StudentController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IStudentRepository _repository;
         private readonly IMapper _mapper;
-        public StudentController(ApplicationDbContext context, IMapper mapper)
+        public StudentController(IStudentRepository repository, IMapper mapper)
         {
-            _context = context;
+            _repository = repository;
             _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StudentDTO>>> getStudents()
         {
-            IEnumerable<Student> studentList = await _context.Students.ToListAsync();
+            IEnumerable<Student> studentList = await _repository.GetAll();
+            
             return Ok(_mapper.Map<List<StudentDTO>>(studentList));
         }
 
@@ -39,7 +41,7 @@ namespace API.Controllers
             {
                 return BadRequest();
             }
-            var student =await _context.Students.FirstOrDefaultAsync(x => x.Id == id);
+            var student =await _repository.GetById(x => x.Id == id);
             if (student == null)
             {
                 return NotFound();
@@ -52,7 +54,7 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<ActionResult<StudentDTO>> createStudent([FromBody] createStudentDTO student)
         {
-            if (await _context.Students.FirstOrDefaultAsync(u => u.Name.ToLower() == student.Name.ToLower()) != null)
+            if (await _repository.GetById(u => u.Name.ToLower() == student.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("Not Unique", "Name Already Exist");
                 return BadRequest(ModelState);
@@ -64,8 +66,7 @@ namespace API.Controllers
             Student model = _mapper.Map<Student>(student);
             model.createdDate = DateTime.Now;
             model.updatedDate = DateTime.Now;
-            await _context.Students.AddAsync(model);
-            await _context.SaveChangesAsync();
+            await _repository.Create(model);
 
             return CreatedAtRoute("GetStu", new { id = model.Id }, model);
         }
@@ -79,13 +80,12 @@ namespace API.Controllers
                 return BadRequest();
             }
 
-            var stu =  await _context.Students.FirstOrDefaultAsync(u => u.Id == id);
+            var stu =  await _repository.GetById(u => u.Id == id);
             if (stu == null)
             {
                 return NotFound();
             }
-            _context.Students.Remove(stu);
-            await _context.SaveChangesAsync();
+            await _repository.Remove(stu);
             return NoContent();
         }
 
@@ -99,8 +99,7 @@ namespace API.Controllers
             }
             Student model = _mapper.Map<Student>(student);
             model.updatedDate = DateTime.Now;
-            _context.Students.Update(model);
-            await _context.SaveChangesAsync();
+            await _repository.Update(model);
             return NoContent();
         }
 
@@ -113,10 +112,10 @@ namespace API.Controllers
                 return BadRequest();
             }
 
-            var stu = await _context.Students.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+            var stu = await _repository.GetById(u => u.Id == id, tracked:false);
 
             updateStudentDTO studentDTO = _mapper.Map<updateStudentDTO>(stu);
-            
+
             if (stu == null)
             {
                 return BadRequest();
@@ -124,8 +123,8 @@ namespace API.Controllers
             student.ApplyTo(studentDTO, ModelState);
             Student model = _mapper.Map<Student>(studentDTO);
             model.updatedDate = DateTime.Now;
-            _context.Students.Update(model);
-            await _context.SaveChangesAsync();
+            await _repository.Update(model);
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
