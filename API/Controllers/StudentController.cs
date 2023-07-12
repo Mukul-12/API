@@ -98,7 +98,7 @@ namespace API.Controllers
                 return BadRequest();
             }
             Student model = _mapper.Map<Student>(student);
-            model.updatedDate = DateTime.Now;
+            
             await _repository.Update(model);
             return NoContent();
         }
@@ -122,7 +122,7 @@ namespace API.Controllers
             }
             student.ApplyTo(studentDTO, ModelState);
             Student model = _mapper.Map<Student>(studentDTO);
-            model.updatedDate = DateTime.Now;
+            
             await _repository.Update(model);
 
             if (!ModelState.IsValid)
