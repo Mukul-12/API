@@ -3,13 +3,9 @@ using System.Linq.Expressions;
 
 namespace API.Repository.IRepository
 {
-    public interface IStudentRepository
+    public interface IStudentRepository : IRepository<Student>
     {
-        Task<List<Student>> GetAll(Expression<Func<Student, bool>> filter = null);
-        Task<Student> GetById(Expression<Func<Student, bool>> filter = null, bool tracked=true);
-        Task Create(Student student);
-        Task Update(Student student);
-        Task Remove(Student student);
-        Task Save();
+        
+        Task<Student> Update(Student student);
     }
 }
