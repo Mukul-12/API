@@ -1,7 +1,7 @@
 ﻿using Web.Models.DTO;
 using AutoMapper;
 
-namespace API
+namespace Web
 {
     public class Mapping : Profile
     {
