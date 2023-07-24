@@ -1,4 +1,6 @@
 using Web;
+using Web.Services;
+using Web.Services.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddAutoMapper(typeof(Mapping));
+
+builder.Services.AddHttpClient<IStudentServices, StudentService>();
+builder.Services.AddScoped<IStudentServices,StudentService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

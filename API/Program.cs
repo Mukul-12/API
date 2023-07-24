@@ -22,7 +22,7 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<ICustomLogger, CustomLogger>();
+/*builder.Services.AddSingleton<ICustomLogger, CustomLogger>();*/
 
 /*Log.Logger = new LoggerConfiguration().MinimumLevel.Debug()
 .WriteTo.File("log/serilog.txt", rollingInterval: RollingInterval.Day)
